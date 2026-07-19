@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1NCOG SOCIETY | OFFICIAL PANEL</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500;700&display=swap');
+
+:root {
+    --accent: #a855f7;
+    --accent-glow: #bf5af2;
+    --bg: #06060c;
+    --bg-card: #0d0d18;
+    --text-muted: #94a3b8;
+    --warning: #eab308;
+    --danger: #ef4444;
+    --success: #22c55e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: var(--bg);
+    color: #f8fafc;
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+}
+
+#canvas {
+    position: fixed;
+    top: 0; left: 0; z-index: -1;
+    opacity: 0.12;
+}
+
+/* ACCESO OBLIGATORIO */
+.login-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #06060c; z-index: 99999;
+    display: flex; justify-content: center; align-items: center; padding: 20px;
+}
+
+.login-card {
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.25);
+    border-radius: 12px;
+    width: 100%; max-width: 400px;
+    padding: 35px 25px; text-align: center;
+}
+
+.login-card h2 {
+    font-family: 'Orbitron'; font-size: 1.6rem; letter-spacing: 2px; margin-bottom: 25px;
+}
+.login-card h2 span { color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); }
+
+/* MENÚ LATERAL */
+.menu-btn {
+    position: fixed; top: 20px; left: 20px; z-index: 1001;
+    background: var(--bg-card); border: 1px solid rgba(168, 85, 247, 0.4);
+    color: var(--accent); padding: 12px 15px; font-family: 'Orbitron';
+    cursor: pointer; border-radius: 4px;
+}
+
+.sidebar {
+    position: fixed; top: 0; left: -300px; width: 300px; height: 100%;
+    background: rgba(13, 13, 24, 0.98); border-right: 1px solid rgba(168, 85, 247, 0.3);
+    z-index: 1000; transition: 0.4s; padding: 100px 20px 30px 20px;
+}
+.sidebar.active { left: 0; }
+.sidebar-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); z-index: 999; display: none;
+}
+.sidebar-overlay.active { display: block; }
+
+.sidebar ul { list-style: none; }
+.sidebar ul li { margin-bottom: 10px; }
+.sidebar ul li a {
+    color: var(--text-muted); text-decoration: none; padding: 12px 15px;
+    display: flex; justify-content: space-between; border-radius: 4px;
+}
+.sidebar ul li a:hover { color: var(--accent); background: rgba(168, 85, 247, 0.05); }
+
+/* CONTENEDORES Y DISEÑO */
+.main-section { padding: 80px 20px 40px 20px; display: none; }
+.header { text-align: center; margin-bottom: 40px; }
+.header h1 { font-family: 'Orbitron'; font-size: 2.5rem; letter-spacing: 4px; text-shadow: 0 0 30px var(--accent-glow); }
+
+.card {
+    background: var(--bg-card); border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px; padding: 25px; max-width: 600px; margin: 0 auto 30px auto;
+}
+
+.order-input {
+    width: 100%; padding: 14px; background: #06060c; border: 1px solid rgba(255,255,255,0.1);
+    color: white; font-family: 'JetBrains Mono'; margin-bottom: 20px; border-radius: 6px;
+}
+.order-input:focus { border-color: var(--accent); outline: none; }
+
+.btn {
+    width: 100%; padding: 16px; border: none; background: var(--accent);
+    color: #000; font-weight: 900; font-family: 'Orbitron'; cursor: pointer; border-radius: 6px;
+}
+.btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 11px; font-family: 'Orbitron'; border: none; border-radius: 4px; cursor: pointer; }
+
+/* LISTAS Y REJILLAS */
+.price-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(6,6,12,0.7); padding: 12px 15px; border-radius: 6px; margin-bottom: 8px;
+}
+.price-item span:last-child { color: var(--accent); font-family: 'Orbitron'; font-weight: bold; }
+
+.grid-2col {
+    display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 900px; margin: 0 auto;
+}
+@media(min-width: 768px) { .grid-2col { grid-template-columns: 1fr 1fr; } }
+
+.admin-list-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #06060c; padding: 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05);
+}
+
+.popup-notif {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #0b0b14; border: 1px solid var(--accent); padding: 14px 24px;
+    border-radius: 8px; color: white; z-index: 100002; font-family: 'Orbitron';
+}
+</style>
+</head>
+<body>
+
+<!-- PANTALLA DE ACCESO -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+        <h2>1NCOG <span>ACCESS</span></h2>
+        <input type="text" id="loginUser" class="order-input" placeholder="USUARIO...">
+        <input type="password" id="loginPass" class="order-input" placeholder="CONTRASEÑA...">
+        <button class="btn" onclick="validarLogin()">INGRESAR</button>
+    </div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<!-- NAVEGACIÓN DESPLEGABLE -->
+<button class="menu-btn" onclick="toggleMenu()">☰ MENU</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
+
+<div class="sidebar" id="sidebar">
+    <h2 style="font-family:'Orbitron'; text-align:center; margin-bottom:20px;">1NCOG CORE</h2>
+    <ul>
+        <li><a href="#" onclick="switchView('view-pedidos')">🛒 TIENDA & PRECIOS</a></li>
+        <li><a href="#" onclick="switchView('view-metodos')">💳 MÉTODOS DE PAGO</a></li>
+        <li id="nav-admin" style="display:none;"><a href="#" onclick="switchView('view-admin')" style="color:var(--warning); border-left: 3px solid var(--warning);">⚡ PANEL ADMIN</a></li>
+        <li><a href="#" onclick="logout()" style="color:var(--danger)">❌ CERRAR SESIÓN</a></li>
+    </ul>
+</div>
+
+<!-- VISTA 1: TIENDA Y GENERADOR DE PEDIDOS -->
+<div id="view-pedidos" class="main-section">
+    <div class="header"><h1>1NCOG SHOP</h1></div>
+    <div class="card">
+        <h2 style="font-family:'Orbitron'; margin-bottom:15px; text-align:center;">GENERAR <span>PEDIDO</span></h2>
+        <input type="text" id="order-country" class="order-input" placeholder="Tu país...">
+        <input type="text" id="order-product" class="order-input" placeholder="Producto que deseas...">
+        <button class="btn" onclick="enviarPedido()">ENVIAR A WHATSAPP</button>
+        
+        <div style="margin-top:30px; border-top:1px dashed rgba(168,85,247,0.3); padding-top:20px;">
+            <p style="text-align:center; font-family:'Orbitron'; margin-bottom:15px;">PRODUCTOS Y VALORES EN VIVO</p>
+            <div id="client-prices-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- VISTA 2: MÉTODOS DE PAGO -->
+<div id="view-metodos" class="main-section">
+    <div class="header"><h1>RECURSOS & SOPORTE</h1></div>
+    
+    <div class="card" style="max-width: 600px;">
+        <h2 style="font-family:'Orbitron'; margin-bottom:20px; color:var(--accent); text-align: center;">MÉTODOS DE PAGO DISPONIBLES</h2>
+        
+        <div class="price-item">
+            <span>💰 Criptomonedas (USDT / LTC)</span>
+            <span style="color:var(--success)">✔ ACTIVO</span>
+        </div>
+        <div class="price-item">
+            <span>💳 Binance Pay</span>
+            <span style="color:var(--success)">✔ ACTIVO</span>
+        </div>
+        <div class="price-item">
+            <span>🏦 Transferencia Local (Tu País)</span>
+            <span style="color:var(--success)">✔ ACTIVO</span>
+        </div>
+        <div class="price-item">
+            <span>📱 PayPal / Saldo Global</span>
+            <span style="color:var(--success)">✔ ACTIVO</span>
+        </div>
+        
+        <p style="font-size:13px; color:var(--text-muted); margin-top:25px; text-align:center; line-height:1.6;">
+            *Los datos de transferencia exactos y direcciones de wallet se entregan de forma confidencial al procesar el pedido con el botón de WhatsApp.
+        </p>
+    </div>
+</div>
+
+<!-- VISTA 3: PANEL DE ADMINISTRACIÓN INTERNO -->
+<div id="view-admin" class="main-section">
+    <div class="header"><h1 style="color:var(--warning);">ADMIN CONTROL LAYER</h1></div>
+    
+    <div class="grid-2col">
+        <!-- GESTIONAR PRODUCTOS -->
+        <div class="card" style="margin:0;">
+            <h3 style="font-family:'Orbitron'; margin-bottom:15px; color:var(--accent);">PRODUCTOS</h3>
+            <input type="text" id="admin-prod-name" class="order-input" placeholder="Nombre (Ej: DRIP CLIENT)">
+            <input type="text" id="admin-prod-price" class="order-input" placeholder="Precio (Ej: 5.70 USD)">
+            <button class="btn" onclick="agregarProducto()" style="background:var(--success);">GUARDAR PRODUCTO</button>
+            <div style="margin-top:20px;" id="admin-prices-list"></div>
+        </div>
+
+        <!-- GESTIONAR ACCESOS DE SOCIOS -->
+        <div class="card" style="margin:0;">
+            <h3 style="font-family:'Orbitron'; margin-bottom:15px; color:var(--accent);">SOCIOS CON ACCESO</h3>
+            <input type="text" id="admin-user-name" class="order-input" placeholder="Nombre de Usuario">
+            <input type="text" id="admin-user-pass" class="order-input" placeholder="Contraseña">
+            <button class="btn" onclick="agregarUsuario()" style="background:var(--success);">CREAR USUARIO</button>
+            <div style="margin-top:20px;" id="admin-users-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// BASE DE MEMORIA LOCAL TEMPORAL
+let productos = JSON.parse(localStorage.getItem('incog_productos')) || {};
+let usuarios = JSON.parse(localStorage.getItem('incog_usuarios')) || {};
+let currentUser = "";
+
+// Inicialización de cuentas maestras
+if(Object.keys(usuarios).length === 0) {
+    usuarios["admin_master"] = { user: "ADMIN", pass: "1NCOG2026" };
+    usuarios["socio_1"] = { user: "SOCIO89", pass: "89" };
+    localStorage.setItem('incog_usuarios', JSON.stringify(usuarios));
+}
+
+// Cargar inventario inicial por defecto si está vacío
+if(Object.keys(productos).length === 0) {
+    productos["p1"] = { name: "DRIP CLIENT", price: "5.70 USD" };
+    productos["p2"] = { name: "HG CHEATS", price: "6.00 USD" };
+    localStorage.setItem('incog_productos', JSON.stringify(productos));
+}
+
+renderFrontData();
+
+function renderFrontData() {
+    // 1. Render en vista cliente
+    const clientList = document.getElementById('client-prices-list');
+    clientList.innerHTML = "";
+    const keysProd = Object.keys(productos);
+    if(keysProd.length === 0) {
+        clientList.innerHTML = "<p style='text-align:center; color:var(--text-muted); font-size:13px;'>No hay productos activos.</p>";
+    } else {
+        keysProd.forEach(key => {
+            clientList.innerHTML += `<div class="price-item"><span>${productos[key].name}</span><span>${productos[key].price}</span></div>`;
+        });
+    }
+
+    // 2. Render en panel administrativo de productos
+    const adminListProd = document.getElementById('admin-prices-list');
+    adminListProd.innerHTML = "<p style='font-size:12px; margin-bottom:10px; color:var(--text-muted);'>PRODUCTOS EN PLATAFORMA:</p>";
+    keysProd.forEach(key => {
+        adminListProd.innerHTML += `
+            <div class="admin-list-item">
+                <div><strong>${productos[key].name}</strong> - ${productos[key].price}</div>
+                <button class="btn-danger" onclick="eliminarProducto('${key}')">ELIMINAR</button>
+            </div>`;
+    });
+
+    // 3. Render en panel de usuarios
+    const adminListUser = document.getElementById('admin-users-list');
+    adminListUser.innerHTML = "<p style='font-size:12px; margin-bottom:10px; color:var(--text-muted);'>SOCIOS LOGUEADOS:</p>";
+    Object.keys(usuarios).forEach(key => {
+        const deleteBtn = usuarios[key].user === "ADMIN" ? "" : `<button class="btn-danger" onclick="eliminarUsuario('${key}')">BORRAR</button>`;
+        adminListUser.innerHTML += `
+            <div class="admin-list-item">
+                <div>👤 <strong>${usuarios[key].user}</strong> (Pass: ${usuarios[key].pass})</div>
+                ${deleteBtn}
+            </div>`;
+    });
+}
+
+// VALIDACIÓN DE LOGINS
+function validarLogin() {
+    const userIn = document.getElementById('loginUser').value.trim();
+    const passIn = document.getElementById('loginPass').value.trim();
+
+    let cuentaEncontrada = null;
+    Object.keys(usuarios).forEach(key => {
+        if(usuarios[key].user.toUpperCase() === userIn.toUpperCase() && usuarios[key].pass === passIn) {
+            cuentaEncontrada = usuarios[key];
+        }
+    });
+
+    if (cuentaEncontrada) {
+        currentUser = cuentaEncontrada.user.toUpperCase();
+        document.getElementById('loginOverlay').style.display = 'none';
+        
+        if (currentUser === "ADMIN") {
+            document.getElementById('nav-admin').style.display = 'block';
+            switchView('view-admin');
+        } else {
+            document.getElementById('nav-admin').style.display = 'none';
+            switchView('view-pedidos');
+        }
+        notification("SISTEMA AUTORIZADO: " + currentUser);
+    } else {
+        notification("❌ CREDENCIALES INCORRECTAS");
+    }
+}
+
+// CONTROL DE INVENTARIO
+function agregarProducto() {
+    const name = document.getElementById('admin-prod-name').value.trim().toUpperCase();
+    const price = document.getElementById('admin-prod-price').value.trim();
+
+    if(!name || !price) return notification("COMPLETA AMBOS CAMPOS");
+
+    const id = "prod_" + Date.now();
+    productos[id] = { name: name, price: price };
+    
+    localStorage.setItem('incog_productos', JSON.stringify(productos));
+    renderFrontData();
+
+    document.getElementById('admin-prod-name').value = "";
+    document.getElementById('admin-prod-price').value = "";
+    notification("PRODUCTO EN LÍNEA");
+}
+
+function eliminarProducto(id) {
+    delete productos[id];
+    localStorage.setItem('incog_productos', JSON.stringify(productos));
+    renderFrontData();
+}
+
+// GESTIÓN DE ACCESOS
+function agregarUsuario() {
+    const user = document.getElementById('admin-user-name').value.trim();
+    const pass = document.getElementById('admin-user-pass').value.trim();
+
+    if(!user || !pass) return notification("RELLENA TODOS LOS CAMPOS");
+
+    let existe = false;
+    Object.keys(usuarios).forEach(key => {
+        if(usuarios[key].user.toUpperCase() === user.toUpperCase()) existe = true;
+    });
+
+    if(existe) return notification("ESTE SOCIO YA EXISTE");
+
+    const id = "user_" + Date.now();
+    usuarios[id] = { user: user, pass: pass };
+    
+    localStorage.setItem('incog_usuarios', JSON.stringify(usuarios));
+    renderFrontData();
+
+    document.getElementById('admin-user-name').value = "";
+    document.getElementById('admin-user-pass').value = "";
+    notification("SOCIO AUTORIZADO");
+}
+
+function eliminarUsuario(id) {
+    delete usuarios[id];
+    localStorage.setItem('incog_usuarios', JSON.stringify(usuarios));
+    renderFrontData();
+}
+
+// NAVEGACIÓN GENERAL
+function switchView(viewId) {
+    document.getElementById('view-pedidos').style.display = 'none';
+    document.getElementById('view-metodos').style.display = 'none';
+    document.getElementById('view-admin').style.display = 'none';
+    document.getElementById(viewId).style.display = 'block';
+    if(document.getElementById('sidebar').classList.contains('active')) toggleMenu();
+}
+
+function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+
+// LOGOUT
+function logout() {
+    currentUser = "";
+    document.getElementById('loginUser').value = "";
+    document.getElementById('loginPass').value = "";
+    document.getElementById('loginOverlay').style.display = 'flex';
+    if(document.getElementById('sidebar').classList.contains('active')) toggleMenu();
+}
+
+function notification(text){
+    const pop = document.createElement("div");
+    pop.className = "popup-notif";
+    pop.innerText = text;
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 2500);
+}
+
+function enviarPedido() {
+    const c = document.getElementById('order-country').value.trim();
+    const p = document.getElementById('order-product').value.trim();
+    if(!c || !p) return notification("INGRESA LOS DATOS REQUERIDOS");
+    
+    const textMsg = `Hola 1NCOG SOCIETY.\nQuiero realizar un pedido:\n\n🌍 País de origen: ${c}\n📦 Producto: ${p}`;
+    window.open(`https://wa.me/56920012710?text=${encodeURIComponent(textMsg)}`, '_blank');
+}
+
+// FONDO ANIMADO MATRIX
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const cols = Array(Math.floor(canvas.width / 20)).fill(1);
+function draw() {
+    ctx.fillStyle = "rgba(6,6,12,0.06)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#a855f7"; ctx.font = "15px monospace";
+    cols.forEach((y, i) => {
+        ctx.fillText(Math.floor(Math.random() * 2), i * 20, y * 20);
+        if (y * 20 > canvas.height && Math.random() > 0.975) cols[i] = 0;
+        cols[i]++;
+    });
+}
+setInterval(draw, 50);
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
